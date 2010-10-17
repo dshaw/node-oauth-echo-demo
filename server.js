@@ -1,8 +1,9 @@
 var http        = require('http'),
     sys         = require('sys'),
     URL         = require('url'),
-    querystring = require('querystring'),
-    OAuth       = require('oauth').OAuth;
+    querystring = require('querystring');
+
+var OAuth       = require('./support/node_oauth').OAuth;
 
 var oa = new OAuth('https://api.twitter.com/oauth/request_token',
                   'https://api.twitter.com/oauth/access_token',
