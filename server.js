@@ -41,7 +41,7 @@ http.createServer(function (req, res) {
           console.log('global_secret_lookup AFTER storage: ' + sys.inspect(global_secret_lookup));
 
           // NOTE: we use the AUTHENTICATE, not the AUTHORIZE URL here
-          var twitterAuthEndpoint = 'https://api.twitter.com/oauth/authenticate?oauth_token=' + oauth_token;
+          var twitterAuthEndpoint = 'https://api.twitter.com/oauth/authorize?oauth_token=' + oauth_token;
           console.log('Redirecting to ' + twitterAuthEndpoint);
           res.writeHead(301, {'Content-Type': 'text/plain', 'Location': twitterAuthEndpoint});
           res.end('Redirecting...\n');
