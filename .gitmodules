@@ -1,6 +1,0 @@
-[submodule "support/node_oauth"]
-	path = support/node_oauth
-	url = http://github.com/dshaw/node-oauth.git
-[submodule "support/express"]
-	path = support/express
-	url = http://github.com/visionmedia/express.git

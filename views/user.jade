@@ -1,0 +1,11 @@
+h1 OAuth Echo Consumer Status
+#response= response
+#twitter-user
+  - if (user)
+    form(id="chatform")
+      label= user.screen_name
+      | :
+      input(type="text", id="message", tabindex="1", placeholder="chat")
+      input(type="submit")
+h2 Node OAuth Echo Demo
+.description Sample application code for providing TwitPic / Plixi / YFrog style OAuth Echo enabled services using Node.js.
