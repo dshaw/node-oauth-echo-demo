@@ -19,7 +19,25 @@ var http        = require('http'),
     express = require('express'),
     OAuth   = require('oauth').OAuth;
 
-console.log(require.paths);
+
+/**
+ * Quick and dirty user object
+ */
+
+function User(id, username, oauth_token, oauth_secret) {
+  this.id = id;
+  this.username = username;
+  this.oauth_token = oauth_token;
+  this.oauth_secret = oauth_secret;
+
+  this.__defineGetter__('sessionUser', function(){
+    return {
+      id: this.id,
+      username: this.username,
+      oauth_token: this.oauth_token
+    };
+  });
+}
 
 
 /**
@@ -31,7 +49,9 @@ var HOST            = process.env.ECHO_TEST_CONSUMER_HOST || '127.0.0.1',
     CONSUMER_KEY    = process.env.ECHO_TEST_CONSUMER_KEY || null,
     CONSUMER_SECRET = process.env.ECHO_TEST_CONSUMER_SECRET || null,
     public          = __dirname + '/public',
-    authCallback    = '/twitterCallback';
+    authCallback    = '/twitterCallback',
+
+    users           = {};
 
 /**
  * Usage
@@ -110,7 +130,6 @@ app.get('/auth', function(req, res){
 });
 
 app.get(authCallback, function(req, res){
-  console.log('Callback URL');
   var parsedURL = URL.parse(req.url);
   var parsedQuery = querystring.parse(parsedURL.query);
   var oauth_token = parsedQuery['oauth_token'];
@@ -125,12 +144,23 @@ app.get(authCallback, function(req, res){
     console.log('oauth_token_secret: ' + oauth_access_token_secret);
     console.log('accesstoken results: ' + sys.inspect(results));
 
-    var stringifiedResults = JSON.stringify(results);
-    var user = (results.user_id && results.screen_name) ? results : null;
-    res.render('user', {
+    if (results.user_id && results.screen_name &&
+        oauth_access_token && oauth_access_token_secret) {
+      // Regenerate session when signing in
+      // to prevent fixation
+      var user = new User(results.user_id, results.screen_name, oauth_access_token, oauth_access_token_secret);
+      console.dir(user);
+      users[user.username] = user;
+      req.session.regenerate(function(){
+        req.session.user = user.sessionUser;
+        console.dir(req.session);
+      });
+      res.redirect('/users/' + user.username);
+    }
+
+    res.render('status', {
       locals: {
-        response: stringifiedResults,
-        user: user
+        response: JSON.stringify(results)
       }
     });
   });
@@ -138,6 +168,27 @@ app.get(authCallback, function(req, res){
   console.log('global_secret_lookup BEFORE delete: ' + sys.inspect(global_secret_lookup));
   delete global_secret_lookup[oauth_token];
   console.log('global_secret_lookup AFTER delete: ' + sys.inspect(global_secret_lookup));
+});
+
+app.get('/users/:user', function(req, res){
+  if (req.session.user) {
+    console.dir(users);
+    res.render('user', {
+      locals: {
+        user: req.session.user
+      }
+    });
+  } else {
+    res.redirect('home');
+  }
+});
+
+app.get('/logout', function(req, res){
+  // destroy the user's session to log them out
+  // will be re-created next request
+  req.session.destroy(function(){
+    res.redirect('home');
+  });
 });
 
 app.listen(PORT);
