@@ -3,16 +3,6 @@ var http        = require('http'),
     URL         = require('url'),
     querystring = require('querystring');
 
-var OAuth       = require('oauth').OAuth;
-
-var oa = new OAuth('https://api.twitter.com/oauth/request_token',
-                  'https://api.twitter.com/oauth/access_token',
-		   process.env.ECHO_TEST_SERVER_KEY,
-		   process.env.ECHO_TEST_SERVER_SECRET,
-                  '1.0',
-                  null,
-                  'HMAC-SHA1');
-
 http.createServer(function (req, res) {
 
   var reqURL = URL.parse(req.url);
