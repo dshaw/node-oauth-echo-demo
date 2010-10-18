@@ -57,8 +57,9 @@ http.createServer(function (req, res) {
 
             // Twitter DID authorize the caller
             case 200:
-              res.writeHead(201, {'Content-Type': 'text/plain', 'Content-Length': 0});
-              res.end();
+              var responseMessage = JSON.stringify({'etag': response.headers['etag']});
+              res.writeHead(200, {'Content-Type': 'text/plain', 'Content-Length': responseMessage.length});
+              res.end(responseMessage);
               break;
 
             // Something strange happened....
