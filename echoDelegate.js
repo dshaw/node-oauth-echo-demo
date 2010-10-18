@@ -3,8 +3,10 @@ var http        = require('http'),
     URL         = require('url'),
     querystring = require('querystring');
 
+var messagesSoFar = [];
 http.createServer(function (req, res) {
 
+  req.setEncoding('utf8');
   var reqURL = URL.parse(req.url);
   switch (req.method) {
 
@@ -12,7 +14,7 @@ http.createServer(function (req, res) {
     case 'GET':
 
       if (reqURL['pathname'] === '/') {
-        var responseMessage = 'At some point, something interesting will be here';
+        var responseMessage = JSON.stringify(messagesSoFar);
         res.writeHead(200, {'Content-Type': 'text/plain', 'Content-Length': responseMessage.length});
         res.end(responseMessage);
 
@@ -34,6 +36,11 @@ http.createServer(function (req, res) {
           res.end(errResponse);
           break;
         }
+        
+        var body = "";
+        req.on('data', function(chunk) {
+          body += chunk;
+        });
 
         console.log('Should be making a call to Twitter here...');
         var twitterServer = http.createClient(443, 'api.twitter.com', true);
@@ -50,6 +57,7 @@ http.createServer(function (req, res) {
 
             // Twitter didn't authorize the caller
             case 401:
+              console.log('Received 401 from Twitter');
               var errResponse = 'Twitter verification failed';
               res.writeHead(401, {'Content-Type': 'text/plain', 'Content-Length': errResponse.length});
               res.end(errResponse);
@@ -57,6 +65,10 @@ http.createServer(function (req, res) {
 
             // Twitter DID authorize the caller
             case 200:
+
+              console.log('Received 200 from Twitter');
+              messagesSoFar.push(body);
+
               var responseMessage = JSON.stringify({'etag': response.headers['etag']});
               res.writeHead(200, {'Content-Type': 'text/plain', 'Content-Length': responseMessage.length});
               res.end(responseMessage);
@@ -64,18 +76,12 @@ http.createServer(function (req, res) {
 
             // Something strange happened....
             default:
+              console.log('Received unknown response from Twitter: ' + response.statusCode);
               var teapotResponse = 'I\'m a little teapot? I think something went wrong...';
               res.writeHead(418, {'Content-Type': 'text/plain', 'Content-Length': teapotResponse.length});
               res.end(teapotResponse);
               break;
           }
-
-          console.log('TWITTER STATUS: ' + response.statusCode);
-          console.log('TWITTER HEADERS: ' + JSON.stringify(response.headers));
-          response.setEncoding('utf8');
-          response.on('data', function (chunk) {
-            console.log('BODY: ' + chunk);
-          });
         });
       }
       break;
