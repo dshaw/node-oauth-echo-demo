@@ -223,7 +223,6 @@ app.get(authCallback, function(req, res){
       // Regenerate session when signing in
       // to prevent fixation
       var user = new User(results.user_id, results.screen_name, oauth_access_token, oauth_access_token_secret);
-      console.dir(user);
       users[user.username] = user;
       req.session.regenerate(function(){
         req.session.user = user.sessionUser;
@@ -267,28 +266,29 @@ app.get('/logout', function(req, res){
 
 
 app.post('/send', function(req, res){
-    var user = users[req.session.user.username];
-    var requestString = oa.getAuthHeader('https://api.twitter.com/1/account/verify_credentials.json',
-                                          user.oauth_access_token,
-                                          user.oauth_access_token_secret);
-    console.log('authHeader: ' + requestString);
+  var user = users[req.session.user.username];
+  console.dir(user);
+  var requestString = oa.getAuthHeader('https://api.twitter.com/1/account/verify_credentials.json',
+                                        user.oauth_token,
+                                        user.oauth_secret);
+  console.log('authHeader: ' + requestString);
 
-    var echoServer = http.createClient(8889, '127.0.0.1');
-    var echoRequest = echoServer.request('GET', '/',
-      {
-        'host': '127.0.0.1',
-        'X-Auth-Service-Provider': 'https://api.twitter.com/1/account/verify_credentials.json',
-        'X-Verify-Credentials-Authorization': requestString
-      });
-    echoRequest.end();
-    echoRequest.on('response', function (response) {
-      console.log('FIRST STATUS: ' + response.statusCode);
-      console.log('FIRST HEADERS: ' + JSON.stringify(response.headers));
-      response.setEncoding('utf8');
-      response.on('data', function (chunk) {
-        console.log('BODY: ' + chunk);
-      });
+  var echoServer = http.createClient(8889, '127.0.0.1');
+  var echoRequest = echoServer.request('GET', '/',
+    {
+      'host': '127.0.0.1',
+      'X-Auth-Service-Provider': 'https://api.twitter.com/1/account/verify_credentials.json',
+      'X-Verify-Credentials-Authorization': requestString
     });
+  echoRequest.end();
+  echoRequest.on('response', function (response) {
+    console.log('FIRST STATUS: ' + response.statusCode);
+    console.log('FIRST HEADERS: ' + JSON.stringify(response.headers));
+    response.setEncoding('utf8');
+    response.on('data', function (chunk) {
+      console.log('BODY: ' + chunk);
+    });
+  });
 });
 
 app.listen(PORT);
