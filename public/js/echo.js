@@ -12,8 +12,8 @@ var console = console || {
 
 (function(global) {
 
+  var username = $("#username").text();
   var chatform = document.getElementById("chatform");
-  var username = document.getElementById("username");
   var message = document.getElementById("message");
 
   if (chatform.addEventListener) {
@@ -25,7 +25,7 @@ var console = console || {
   function submitHandler(event) {
     event.preventDefault();
     $.post('/send',
-        JSON.stringify({ username: username.value, message: message.value }),
+        JSON.stringify({ username: username, message: message.value }),
         function(response){
           var rsp = "response: " + response
           console.log(rsp);
@@ -33,6 +33,7 @@ var console = console || {
         });
     message.value = '';
     this.blur();
+    return false;
   }
 
 })(this);

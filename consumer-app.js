@@ -267,20 +267,20 @@ app.get('/logout', function(req, res){
 
 app.post('/send', function(req, res){
   var user = users[req.session.user.username];
-  console.dir(user);
+  console.dir(req.rawBody);
   var requestString = oa.getAuthHeader('https://api.twitter.com/1/account/verify_credentials.json',
                                         user.oauth_token,
                                         user.oauth_secret);
   console.log('authHeader: ' + requestString);
 
   var echoServer = http.createClient(8889, '127.0.0.1');
-  var echoRequest = echoServer.request('GET', '/',
+  var echoRequest = echoServer.request('POST', '/message',
     {
       'host': '127.0.0.1',
       'X-Auth-Service-Provider': 'https://api.twitter.com/1/account/verify_credentials.json',
       'X-Verify-Credentials-Authorization': requestString
     });
-  echoRequest.end();
+  echoRequest.end(req.rawBody);
   echoRequest.on('response', function (response) {
     console.log('FIRST STATUS: ' + response.statusCode);
     console.log('FIRST HEADERS: ' + JSON.stringify(response.headers));
