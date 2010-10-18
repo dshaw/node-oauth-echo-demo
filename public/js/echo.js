@@ -27,7 +27,7 @@ var console = console || {
     $.post('/send',
         JSON.stringify({ username: username, message: message.value }),
         function(response){
-          var rsp = "response: " + response
+          var rsp = "response: " + response;
           console.log(rsp);
           $('#echo-delegate').append(rsp);
         });
