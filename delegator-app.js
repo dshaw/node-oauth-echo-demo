@@ -3,6 +3,7 @@ var http        = require('http'),
     URL         = require('url'),
     querystring = require('querystring');
 
+var PORT = 8889;
 var messagesSoFar = [];
 http.createServer(function (req, res) {
 
@@ -92,5 +93,5 @@ http.createServer(function (req, res) {
       res.end(errResponse);
       break;
   }
-}).listen(8889, '127.0.0.1');
-console.log('Server running at http://127.0.0.1:8889/');
+}).listen(PORT);
+console.log('Server running on :'+PORT);
